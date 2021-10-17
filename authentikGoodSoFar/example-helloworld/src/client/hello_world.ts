@@ -61,12 +61,12 @@ const PROGRAM_KEYPAIR_PATH = path.join(PROGRAM_PATH, 'helloworld-keypair.json');
  * The state of a greeting account managed by the hello world program
  */
 class GreetingAccount {
-  counter = "1234";
-  mint = new PublicKey("2HnUkkFFWqya8LPVQSjMbX3Eo5wYsfD5MdfESJvqF2c6");
+  counter = "";
+  mint = new PublicKey(0);
   constructor(fields: {counter: string, mint: PublicKey} | undefined = undefined) {
     if (fields) {
       this.counter = fields.counter;
-      this.mint = fields.mint
+      this.mint = fields.mint;
     }
   }
 }
@@ -75,7 +75,7 @@ class GreetingAccount {
  * Borsh schema definition for greeting accounts
  */
 const GreetingSchema = new Map([
-  [GreetingAccount, {kind: 'struct', fields: [['counter', 'string'], ['mint', 'PublicKey']]}],
+  [GreetingAccount, {kind: 'struct', fields: [['counter', 'String'],['mint', 'Pubkey']]}],
 ]);
 
 /**
@@ -86,7 +86,7 @@ extendBorsh();
 const GREETING_SIZE = borsh.serialize(
   GreetingSchema,
   new GreetingAccount(),
-).length;
+).length + 4;
 
 /**
  * Establish a connection to the cluster
@@ -168,7 +168,7 @@ export async function checkProgram(): Promise<void> {
   console.log(`Using program ${programId.toBase58()}`);
 
   // Derive the address (public key) of a greeting account from the program so that it's easy to find later.
-  const GREETING_SEED = 'ldsjooooooooookhsmsjlkdkajdaiojsoaismadkjhjdkskoo';
+  const GREETING_SEED = 'ldsjlkjtttjjkoo';
   greetedPubkey = await PublicKey.createWithSeed(
     payer.publicKey,
     GREETING_SEED,
