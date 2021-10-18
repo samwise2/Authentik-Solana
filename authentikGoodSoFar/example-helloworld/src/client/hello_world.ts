@@ -15,6 +15,7 @@ import fs from 'mz/fs';
 import path from 'path';
 import * as borsh from 'borsh';
 import { extendBorsh } from './borsh';
+export type StringPublicKey = string;
 
 import {getPayer, getRpcUrl, createKeypairFromFile} from './utils';
 
@@ -57,16 +58,22 @@ const PROGRAM_SO_PATH = path.join(PROGRAM_PATH, 'helloworld.so');
  */
 const PROGRAM_KEYPAIR_PATH = path.join(PROGRAM_PATH, 'helloworld-keypair.json');
 
+extendBorsh();
+
 /**
  * The state of a greeting account managed by the hello world program
  */
 class GreetingAccount {
-  counter = "";
-  mint = new PublicKey(0);
-  constructor(fields: {counter: string, mint: PublicKey} | undefined = undefined) {
+  //counter = "";
+  mint = "";
+  uri = "";
+  //num = 0;
+  constructor(fields: {uri: string, mint: StringPublicKey} | undefined = undefined) {
     if (fields) {
-      this.counter = fields.counter;
+      // this.counter = fields.counter;
       this.mint = fields.mint;
+      this.uri = fields.uri;
+      // this.num = fields.num;
     }
   }
 }
@@ -75,18 +82,17 @@ class GreetingAccount {
  * Borsh schema definition for greeting accounts
  */
 const GreetingSchema = new Map([
-  [GreetingAccount, {kind: 'struct', fields: [['counter', 'String'],['mint', 'Pubkey']]}],
+  [GreetingAccount, {kind: 'struct', fields: [['uri', 'String'], ['mint', 'pubkeyAsString']]}],
 ]);
 
 /**
  * The expected size of each greeting account.
  */
-extendBorsh();
 
 const GREETING_SIZE = borsh.serialize(
   GreetingSchema,
   new GreetingAccount(),
-).length + 4;
+).length + 32 + 5;
 
 /**
  * Establish a connection to the cluster
@@ -168,7 +174,7 @@ export async function checkProgram(): Promise<void> {
   console.log(`Using program ${programId.toBase58()}`);
 
   // Derive the address (public key) of a greeting account from the program so that it's easy to find later.
-  const GREETING_SEED = 'ldsjlkjtttjjkoo';
+  const GREETING_SEED = 'hhq';
   greetedPubkey = await PublicKey.createWithSeed(
     payer.publicKey,
     GREETING_SEED,
@@ -229,15 +235,23 @@ export async function reportGreetings(): Promise<void> {
   if (accountInfo === null) {
     throw 'Error: cannot find the greeted account';
   }
-  const greeting = borsh.deserialize(
+  console.log("length of data on acct");
+  console.log(accountInfo.data.byteLength);
+
+  console.log("Length of data expected");
+  console.log(GREETING_SIZE);
+
+  const greeting = borsh.deserializeUnchecked(
     GreetingSchema,
     GreetingAccount,
     accountInfo.data,
   );
+
+  console.log(greeting);
+
   console.log(
     greetedPubkey.toBase58(),
-    'has been greeted',
-    greeting.counter,
-    'time(s)',
+    'uri is ',
+    greeting.uri
   );
 }

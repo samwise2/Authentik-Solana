@@ -16,8 +16,9 @@ use solana_program::{
 pub struct GreetingAccount {
     // public key
     pub mint: Pubkey,
-    /// number of greetings
-    pub counter: String,
+    // number of greetings
+    pub uri: String,
+    //pub num: u32,
 }
 
 pub fn try_from_slice_unchecked<GreetingAccount: BorshDeserialize>(data: &[u8]) -> Result<GreetingAccount, Error> {
@@ -55,14 +56,20 @@ pub fn process_instruction(
     msg!("1");
     let mut greeting_account: GreetingAccount = try_from_slice_unchecked(&account.data.borrow())?;
     msg!("{:?}", greeting_account);
-    greeting_account.counter = "5678".to_string();
+    //greeting_account.counter = "word".to_string();
+    //greeting_account.num = 4;
+    greeting_account.mint = Pubkey::new_unique();
+    greeting_account.uri = "hello".to_string();
+
     msg!("{:?}", greeting_account);
-    msg!(&greeting_account.counter);
+    // msg!(&greeting_account.mint);
 
     greeting_account.serialize(&mut &mut account.data.borrow_mut()[..])?;
     msg!("3");
 
-    msg!("Counter is now str {}", greeting_account.counter);
+    //msg!("Counter is now str {}", greeting_account.counter);
+    //msg!("num is now str {}", greeting_account.num);
+    msg!("new uri {}", greeting_account.uri);
 
     Ok(())
 }
