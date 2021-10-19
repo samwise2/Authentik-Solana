@@ -123,7 +123,7 @@ export async function checkProgram(): Promise<void> {
     throw new Error(`Program is not executable`);
   }
 
-  const AUTHENTIK_NFT_ACCOUNT_SEED = 'loll';
+  const AUTHENTIK_NFT_ACCOUNT_SEED = 'lolll';
   authentikPubkey = await PublicKey.createWithSeed(
     payer.publicKey,
     AUTHENTIK_NFT_ACCOUNT_SEED,
