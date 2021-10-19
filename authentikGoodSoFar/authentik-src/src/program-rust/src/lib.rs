@@ -19,9 +19,9 @@ pub struct AuthentikNFTAccount {
 }
 
 // Method to deserialize data given a buffer with extra space for our URI
-pub fn try_from_slice_unchecked<GreetingAccount: BorshDeserialize>(data: &[u8]) -> Result<GreetingAccount, Error> {
+pub fn try_from_slice_unchecked<AuthentikNFTAccount: BorshDeserialize>(data: &[u8]) -> Result<AuthentikNFTAccount, Error> {
     let mut data_mut = data;
-    let result = GreetingAccount::deserialize(&mut data_mut)?;
+    let result = AuthentikNFTAccount::deserialize(&mut data_mut)?;
     Ok(result)
 }
 
@@ -83,16 +83,17 @@ mod test {
 
         let accounts = vec![account];
 
+        let mut authentik_nft_account: AuthentikNFTAccount = AuthentikNFTAccount::deserialize(&accounts[0].data.borrow())?;
         assert_eq!(
-            AuthentikNFTAccount::try_from_slice_unchecked(&accounts[0].data.borrow())
-                .unwrap()
+            authentik_nft_account
                 .uri,
             ""
         );
         process_instruction(&program_id, &accounts, &instruction_data).unwrap();
+
+        let mut updated_authentik_nft_account: AuthentikNFTAccount = AuthentikNFTAccount::deserialize(&accounts[0].data.borrow())?;
         assert_eq!(
-            AuthentikNFTAccount::try_from_slice_unchecked(&accounts[0].data.borrow())
-                .unwrap()
+            updated_authentik_nft_account
                 .uri,
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         );
