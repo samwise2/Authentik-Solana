@@ -1,17 +1,17 @@
-/**
- * Hello world
- */
-
 import {
   establishConnectionToCluster,
   establishPayer,
   checkProgram,
   setAuthentikNFTOnChain,
   printOnChainAuthentikNFT,
+  registerUri,
 } from './authentik_client_driver';
 
 async function main() {
   console.log("Setting on-chain AuthentikNFT account with URI...");
+
+  // Set the uri that we want to set for the NFT
+  registerUri('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 
   // Establish connection to the cluster
   await establishConnectionToCluster();
