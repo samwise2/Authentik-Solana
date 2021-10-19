@@ -3,18 +3,18 @@
  */
 
 import {
-  establishConnection,
+  establishConnectionToCluster,
   establishPayer,
   checkProgram,
-  sayHello,
-  reportGreetings,
-} from './hello_world';
+  setAuthentikNFTOnChain,
+  printOnChainAuthentikNFT,
+} from './authentik_client_driver';
 
 async function main() {
-  console.log("Let's say hello to a Solana account...");
+  console.log("Setting on-chain AuthentikNFT account with URI...");
 
   // Establish connection to the cluster
-  await establishConnection();
+  await establishConnectionToCluster();
 
   // Determine who pays for the fees
   await establishPayer();
@@ -22,13 +22,11 @@ async function main() {
   // Check if the program has been deployed
   await checkProgram();
 
-  // Say hello to an account
-  await sayHello();
+  // Send transaction to write AuthentikNFT struct to account on-chain
+  await setAuthentikNFTOnChain();
 
   // Find out how many times that account has been greeted
-  await reportGreetings();
-
-  console.log('Success');
+  await printOnChainAuthentikNFT();
 }
 
 main().then(
