@@ -11,16 +11,14 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Define the type of state stored in accounts
+
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
-pub struct GreetingAccount {
-    // public key
-    pub mint: Pubkey,
-    // number of greetings
+pub struct AuthentikNFTAccount {
+    // An NFT URI
     pub uri: String,
-    //pub num: u32,
 }
 
+// Method to deserialize data given a buffer with extra space for our URI
 pub fn try_from_slice_unchecked<GreetingAccount: BorshDeserialize>(data: &[u8]) -> Result<GreetingAccount, Error> {
     let mut data_mut = data;
     let result = GreetingAccount::deserialize(&mut data_mut)?;
@@ -32,44 +30,27 @@ entrypoint!(process_instruction);
 
 // Program entrypoint's implementation
 pub fn process_instruction(
-    program_id: &Pubkey, // Public key of the account the hello world program was loaded into
-    accounts: &[AccountInfo], // The account to say hello to
-    _instruction_data: &[u8], // Ignored, all helloworld instructions are hellos
+    program_id: &Pubkey,
+    accounts: &[AccountInfo], // Holds an account we want to give an NFT to
+    _instruction_data: &[u8], // We won't use this for now, but in a real program we would dynamically pass the URI
 ) -> ProgramResult {
-    msg!("Hello World Rust program entrypoint");
 
-    // Iterating accounts is safer then indexing
     let accounts_iter = &mut accounts.iter();
+    let account_to_receive_authentik_nft = next_account_info(accounts_iter)?;
 
-    // Get the account to say hello to
-    let account = next_account_info(accounts_iter)?;
-
-    // The account must be owned by the program in order to modify its data
-    if account.owner != program_id {
+    // This program must own the account to set it's AuthentikNFT object
+    if account_to_receive_authentik_nft.owner != program_id {
         msg!("Greeted account does not have the correct program id");
         return Err(ProgramError::IncorrectProgramId);
     }
 
-    // Increment and store the number of times the account has been greeted
-    //let mut data_mut = &account.data.borrow();
-    //let mut greeting_account = GreetingAccount::deserialize(&mut data_mut)?;
-    msg!("1");
-    let mut greeting_account: GreetingAccount = try_from_slice_unchecked(&account.data.borrow())?;
-    msg!("{:?}", greeting_account);
-    //greeting_account.counter = "word".to_string();
-    //greeting_account.num = 4;
-    greeting_account.mint = Pubkey::new_unique();
-    greeting_account.uri = "hello".to_string();
+    let mut authentik_nft_account: AuthentikNFTAccount = try_from_slice_unchecked(&account_to_receive_authentik_nft.data.borrow())?;
+    
+    authentik_nft_account.uri = "https://www.youtube.com/watch?v=dQw4w9WgXcQ".to_string();
 
-    msg!("{:?}", greeting_account);
-    // msg!(&greeting_account.mint);
+    authentik_nft_account.serialize(&mut &mut account_to_receive_authentik_nft.data.borrow_mut()[..])?;
 
-    greeting_account.serialize(&mut &mut account.data.borrow_mut()[..])?;
-    msg!("3");
-
-    //msg!("Counter is now str {}", greeting_account.counter);
-    //msg!("num is now str {}", greeting_account.num);
-    msg!("new uri {}", greeting_account.uri);
+    msg!("Established AuthentikNFT with URI: {}", authentik_nft_account.uri);
 
     Ok(())
 }
@@ -103,24 +84,17 @@ mod test {
         let accounts = vec![account];
 
         assert_eq!(
-            GreetingAccount::try_from_slice(&accounts[0].data.borrow())
+            AuthentikNFTAccount::try_from_slice_unchecked(&accounts[0].data.borrow())
                 .unwrap()
-                .counter,
-            0
+                .uri,
+            ""
         );
         process_instruction(&program_id, &accounts, &instruction_data).unwrap();
         assert_eq!(
-            GreetingAccount::try_from_slice(&accounts[0].data.borrow())
+            AuthentikNFTAccount::try_from_slice_unchecked(&accounts[0].data.borrow())
                 .unwrap()
-                .counter,
-            1
-        );
-        process_instruction(&program_id, &accounts, &instruction_data).unwrap();
-        assert_eq!(
-            GreetingAccount::try_from_slice(&accounts[0].data.borrow())
-                .unwrap()
-                .counter,
-            2
+                .uri,
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         );
     }
 }
